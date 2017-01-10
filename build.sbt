@@ -9,6 +9,7 @@ organization := "com.themillhousegroup"
 
 libraryDependencies ++= Seq(
     "com.typesafe.play"           %%  "play-ws"               % "2.5.3"      % "provided",
+    "com.themillhousegroup"       %%  "arallon"               % "0.1.48",
     "org.mockito"                 %   "mockito-all"           % "1.10.19"       % "test",
     "org.specs2"                  %%  "specs2"                % "2.3.13"      % "test"
 )
