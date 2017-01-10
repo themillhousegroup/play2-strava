@@ -7,8 +7,11 @@ scalaVersion := "2.11.7"
 
 organization := "com.themillhousegroup"
 
+val targetPlayVersion = "2.5.3"
+
 libraryDependencies ++= Seq(
-    "com.typesafe.play"           %%  "play-ws"               % "2.5.3"      % "provided",
+    "com.typesafe.play"           %%  "play-ws"               % targetPlayVersion      % "provided",
+    "com.typesafe.play"           %%  "play-cache"            % targetPlayVersion      % "provided",
     "com.themillhousegroup"       %%  "arallon"               % "0.1.48",
     "org.mockito"                 %   "mockito-all"           % "1.10.19"       % "test",
     "org.specs2"                  %%  "specs2"                % "2.3.13"      % "test"
