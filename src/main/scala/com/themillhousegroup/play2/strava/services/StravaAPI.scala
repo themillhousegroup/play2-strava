@@ -7,14 +7,12 @@ import com.themillhousegroup.arallon.{TimeInZone, TimeZone, UTC}
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.libs.ws._
 import play.api.Play.current
-import models._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.ws
 import play.api.{Logger, libs}
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.joda.time.format.{DateTimeFormat, ISODateTimeFormat}
 import org.apache.commons.lang3.StringUtils
-import play.twirl.api.Html
 
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
