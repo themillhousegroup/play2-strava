@@ -29,7 +29,7 @@ object StravaAPI {
 
   private val logger = Logger("StravaAPI")
 
-  def paginate[T](apiCall: Int => Future[List[T]], pageNumber:Int = 1):Future[List[T]] = {
+  def paginate[T](apiCall: Int => Future[Seq[T]], pageNumber:Int = 1):Future[Seq[T]] = {
     apiCall(pageNumber).flatMap { listOfThings =>
       if (listOfThings.size == StravaAPI.maxPageSize) {
         logger.info("API call returned MAX things; looping for more")

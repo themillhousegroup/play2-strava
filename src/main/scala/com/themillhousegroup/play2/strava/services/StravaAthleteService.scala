@@ -29,11 +29,11 @@ class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: Cache
     }
   }
 
-  def listFriendsFor(stravaAccessToken: String, athleteId: Long): Future[List[EssentialStravaAthlete]] = {
+  def listFriendsFor(stravaAccessToken: String, athleteId: Long): Future[Seq[EssentialStravaAthlete]] = {
     val paginatedFriendsList = (page: Int) =>
       getWithBearerAuth(stravaAPI.allMyFriendsFinder(athleteId, page), stravaAccessToken).map { response =>
         logger.info(s"Friends response for athlete $athleteId, page $page: using token: $stravaAccessToken \n${response.json}")
-        response.json.as[List[StravaAthleteSummary]]
+        response.json.as[Seq[StravaAthleteSummary]]
       }
 
     StravaAPI.paginate(paginatedFriendsList)
@@ -43,15 +43,15 @@ class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: Cache
 
   def cacheNameFor(athleteId: Long) = s"komCache[${athleteId}]"
 
-  def withKOMCacheFor(athleteId: Long, accessToken: String): Future[List[StravaSegmentEffort]] =
+  def withKOMCacheFor(athleteId: Long, accessToken: String): Future[Seq[StravaSegmentEffort]] =
     withCacheFor(athleteId, accessToken)(listKOMsFor)
 
-  private def listKOMsFor(stravaAccessToken: String, athleteId: Long): Future[List[StravaSegmentEffort]] = {
+  private def listKOMsFor(stravaAccessToken: String, athleteId: Long): Future[Seq[StravaSegmentEffort]] = {
 
     val paginatedKOMList = (page: Int) =>
       getWithBearerAuth(stravaAPI.allMyKOMsFinder(athleteId, page), stravaAccessToken).map { response =>
         logger.info(s"KOMS response for athlete $athleteId, page $page: using token: $stravaAccessToken \n${response.json}")
-        response.json.as[List[StravaSegmentEffort]]
+        response.json.as[Seq[StravaSegmentEffort]]
       }
 
     StravaAPI.paginate(paginatedKOMList)
