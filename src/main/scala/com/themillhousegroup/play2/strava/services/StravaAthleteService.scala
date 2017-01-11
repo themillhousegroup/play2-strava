@@ -17,8 +17,6 @@ import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
 class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: CacheApi)
     extends CachingStravaService[List[StravaSegmentEffort], Long] {
 
-  val oneDay = Duration(24, "hours")
-
   val logger = Logger("StravaAthleteService")
 
   def getFullAthleteInfo(stravaAccessToken: String, athleteId: Long): Future[Option[StravaAthlete]] = {
