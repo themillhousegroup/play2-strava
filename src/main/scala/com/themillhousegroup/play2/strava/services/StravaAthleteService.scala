@@ -6,22 +6,16 @@ import com.themillhousegroup.play2.strava.models._
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-
-import play.api.Logger
+import StravaJson._
 import play.api.cache.CacheApi
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-
-import StravaJson._
+import com.themillhousegroup.play2.strava.services.traits.CachingStravaService
+import play.api.Logger
+import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
 
 @Singleton
 class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: CacheApi)
-    extends BearerAuthService with CachingStravaService[List[StravaSegmentEffort], Long] {
-
-  var fifteenMinuteUsage: Option[Int] = None
-  var dailyUsage: Option[Int] = None
-
-  val fifteenMinuteRequestLimit = 600
-  val dailyRequestLimit = 30000
+    extends CachingStravaService[List[StravaSegmentEffort], Long] {
 
   val oneDay = Duration(24, "hours")
 

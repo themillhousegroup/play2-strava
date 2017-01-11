@@ -15,24 +15,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 import org.joda.time.format.{DateTimeFormat, ISODateTimeFormat}
 import org.apache.commons.lang3.StringUtils
 import play.twirl.api.Html
-import play.api.cache.CacheApi
 
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
-
-trait BearerAuthService {
-
-  protected def withBearerAuth(finder: => WSRequest, accessToken:String):WSRequest = {
-    finder.withHeaders("Authorization" -> s"Bearer ${accessToken}")
-  }
-
-  protected def getWithBearerAuth(finder: => WSRequest, accessToken:String):Future[WSResponse] = {
-    withBearerAuth(finder, accessToken).get().map(updateUsage)
-  }
-
-  protected def updateUsage(response:WSResponse):WSResponse = response
-}
 
 object StravaAPI {
   val dateFormat = ISODateTimeFormat.dateTimeNoMillis()
@@ -121,31 +107,5 @@ class StravaAPI @Inject() (val wsClient:WSClient) {
   def segmentExplorer(minLat:Double, minLon:Double, maxLat:Double, maxLon:Double) = {
     val boundsString = s"$minLat,$minLon,$maxLat,$maxLon"
     wsClient.url(segmentExploreUrl).withQueryString("bounds" -> boundsString)
-  }
-
-}
-
-trait CachingStravaService[T, ID] {
-  val cache:CacheApi
-  val logger:Logger
-
-  protected val cacheExpiry = Duration(3, "hours")
-
-  protected def cacheNameFor(entityId:ID):String
-
-  protected def withCacheFor[T:ClassTag](entityId:ID, accessToken:String)(fetcher: (String, ID) => Future[T]):Future[T] = {
-    val cacheName = cacheNameFor(entityId)
-    val maybeResult = cache.get[T](cacheName)
-
-    maybeResult.fold {
-      logger.warn(s"Cache miss for $cacheName")
-      fetcher(accessToken, entityId).map { entity =>
-        cache.set(cacheName, entity, cacheExpiry)
-        entity
-      }
-    } { hit =>
-      logger.debug(s"Cache hit for $cacheName")
-      Future.successful(hit)
-    }
   }
 }
