@@ -2,8 +2,6 @@ package com.themillhousegroup.play2.strava.services
 
 import javax.inject.{Inject, Singleton}
 
-import com.themillhousegroup.arallon.TimeInZone
-
 import org.apache.commons.lang3.exception.ExceptionUtils
 import play.api.Logger
 import play.api.cache.CacheApi
@@ -15,6 +13,7 @@ import com.themillhousegroup.play2.strava.models._
 import StravaJson._
 
 import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
+import org.joda.time.{DateTime, LocalDateTime}
 
 @Singleton
 class  StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) {
@@ -80,8 +79,8 @@ class  StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) 
     }
   }
 
-  def listActivitiesAfter(stravaAccessToken:String, time:TimeInZone[_]):Future[Seq[StravaActivitySummary]] = {
-    val afterInSecondsFromEpoch = time.utcMillis / 1000
+  def listActivitiesAfter(stravaAccessToken:String, time:DateTime):Future[Seq[StravaActivitySummary]] = {
+    val afterInSecondsFromEpoch = time.getMillis / 1000
     logger.info(s"Requesting Strava entries for $stravaAccessToken AFTER $afterInSecondsFromEpoch")
 
     val paginatedActivityList = (page:Int) =>

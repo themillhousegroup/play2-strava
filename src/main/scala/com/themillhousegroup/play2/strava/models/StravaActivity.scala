@@ -1,9 +1,9 @@
 package com.themillhousegroup.play2.strava.models
 
 import play.api.libs.json.{ JsValue, Json }
-import com.themillhousegroup.arallon.TimeInZone
-import org.joda.time.{ DateTime, Days }
+import org.joda.time.{ DateTimeZone, DateTime, Days }
 import org.apache.commons.lang3.StringUtils
+import org.joda.time
 
 object StravaActivity {
   val tzRegex = """^\(.*\)[ ](.*)$""".r
@@ -32,7 +32,7 @@ trait EssentialStravaActivity extends EssentialStravaEntity {
     m.group(1)
   }
 
-  lazy val at = TimeInZone.fromMillis(millis, javaTZ)
+  lazy val at = new time.DateTime(millis, DateTimeZone.forID(javaTZ))
 
   val movingTimeSeconds = moving_time
   val totalTimeSeconds = elapsed_time
