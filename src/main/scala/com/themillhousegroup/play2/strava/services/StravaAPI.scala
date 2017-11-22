@@ -46,13 +46,29 @@ object StravaAPI {
   private def allMyKOMsUrl(id:Long) = stravaV3BaseUrl + s"/athletes/${id}/koms"
   private def singleAthleteUrl(id:Long) = stravaV3BaseUrl + s"/athletes/${id}"
   private def allMyFriendsUrl(id:Long) = stravaV3BaseUrl + s"/athletes/${id}/friends"
+  private val createActivityUrl = s"https://www.strava.com/api/v3/activities"
   private def singleActivityUrl(id:Long) = stravaV3BaseUrl + s"/activities/${id}"
   private def clubActivityUrl(id:String) = stravaV3BaseUrl + s"/clubs/${id}/activities"
   private def segmentUrl(id:Long) = stravaV3BaseUrl + s"/segments/${id}"
   private def segmentEffortsUrl(id:Long) = stravaV3BaseUrl + s"/segments/${id}/all_efforts"
-  private def activityStreamUrl(id:Long, streamType:String) = stravaV3BaseUrl + s"/activities/${id}/streams/${streamType}"
+  private def activityStreamUrl(id:Long,
+                                streamType:String,
+                                resolution:Option[String],
+                                seriesType:Option[String]) = {
+    val resolutionOption = resolution.map(r => s"?resolution=$r")
+    val sType = seriesType.map(s => s"&series_type=$s").getOrElse("")
+
+    val finalOptionsString = resolutionOption.map { r =>
+      s"$r$sType"
+    }.getOrElse("")
+    stravaV3BaseUrl + s"/activities/${id}/streams/${streamType}${finalOptionsString}"
+  }
+  private def segmentStreamUrl(id:Long, streamType:String) = stravaV3BaseUrl + s"/segments/${id}/streams/${streamType}"
+
   private val segmentExploreUrl = stravaV3BaseUrl + "/segments/explore"
 
+  private def activityPhotosUrl(activityId:Long, sizePx:Option[Int]) =
+    stravaV3BaseUrl + s"""/activities/${activityId}/photos?photo_sources=true${sizePx.map(s => s"size=$s").getOrElse("")}"""
 }
 
 class StravaAPI @Inject() (val wsClient:WSClient) {
@@ -63,8 +79,13 @@ class StravaAPI @Inject() (val wsClient:WSClient) {
   def withPaginationQueryString(page:Int)(req:WSRequest) = {
      req.withQueryString(pageParam -> page.toString, perPageParam -> maxPageSize.toString)
   }
-		
-  def allMyActivitiesFinder = wsClient.url(allMyActivitiesUrl)
+
+  def allMyActivitiesFinder(page:Int) = withPaginationQueryString(page) {
+    wsClient.url(allMyActivitiesUrl)
+  }
+
+  val createActivityFinder = wsClient.url(createActivityUrl)
+
 
   def allMyKOMsFinder(athleteId:Long, page:Int) = withPaginationQueryString(page) {
     wsClient.url(allMyKOMsUrl(athleteId))
@@ -79,7 +100,12 @@ class StravaAPI @Inject() (val wsClient:WSClient) {
 
   def singleActivityUrlFinder(activityId:Long) = wsClient.url(singleActivityUrl(activityId))
   def clubActivityUrlFinder(clubId:String) = wsClient.url(clubActivityUrl(clubId))
-  def activityStreamUrlFinder(activityId:Long,  streamType:String) = wsClient.url(activityStreamUrl(activityId, streamType))
+  def activityStreamUrlFinder(activityId:Long,
+                              streamType:String,
+                              resolution:Option[String],
+                              seriesType:Option[String]) = {
+    wsClient.url(activityStreamUrl(activityId, streamType, resolution, seriesType))
+  }
   def segmentUrlFinder(segmentId:Long) = wsClient.url(segmentUrl(segmentId))
   def segmentEffortsUrlFinder[TZ <: TimeZone : ClassTag](segmentId:Long,
                               maybeAthleteId:Option[Long] = None,
@@ -106,4 +132,6 @@ class StravaAPI @Inject() (val wsClient:WSClient) {
     val boundsString = s"$minLat,$minLon,$maxLat,$maxLon"
     wsClient.url(segmentExploreUrl).withQueryString("bounds" -> boundsString)
   }
+
+  def activityPhotosUrlFinder(activityId:Long, sizePx:Option[Int]) = wsClient.url(activityPhotosUrl(activityId, sizePx))
 }

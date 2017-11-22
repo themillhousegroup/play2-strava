@@ -7,6 +7,11 @@ import org.apache.commons.lang3.StringUtils
 
 object StravaActivity {
   val tzRegex = """^\(.*\)[ ](.*)$""".r
+
+  def parseToJavaTimeZone(stravaTimezone: String): String =
+    tzRegex.findFirstMatchIn(stravaTimezone).fold("UTC") { m =>
+      m.group(1)
+    }
 }
 
 trait EssentialStravaActivity extends EssentialStravaEntity {

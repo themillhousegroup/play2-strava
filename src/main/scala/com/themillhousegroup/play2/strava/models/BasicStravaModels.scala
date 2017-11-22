@@ -29,4 +29,7 @@ object StravaJson {
   implicit val stravaActivityPerformanceFormat = Json.format[StravaActivityPerformanceAspects]
 
   implicit val stravaStreamObjectFormat = Json.format[StravaStreamObject]
+
+  val stravaPhotoReads = Json.reads[StravaActivityPhoto]
+  val instaPhotoReads = Json.reads[InstagramActivityPhoto]
 }
