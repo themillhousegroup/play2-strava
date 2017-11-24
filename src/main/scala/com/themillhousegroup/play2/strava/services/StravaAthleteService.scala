@@ -15,7 +15,7 @@ import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
 
 @Singleton
 class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: CacheApi)
-    extends CachingStravaService[List[StravaSegmentEffort], Long] {
+    extends CachingStravaService[Long] {
 
   val logger = Logger("StravaAthleteService")
 

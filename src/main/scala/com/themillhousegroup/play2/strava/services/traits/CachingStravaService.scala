@@ -8,7 +8,7 @@ import play.api.cache.CacheApi
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Logger
 
-trait CachingStravaService[T, ID] {
+trait CachingStravaService[ID] {
   val cache: CacheApi
   val logger: Logger
 
@@ -16,9 +16,9 @@ trait CachingStravaService[T, ID] {
 
   protected def cacheNameFor(entityId: ID): String
 
-  protected def withCacheFor[T: ClassTag](entityId: ID, accessToken: String)(fetcher: (String, ID) => Future[T]): Future[T] = {
+  protected def withCacheFor[CT: ClassTag](entityId: ID, accessToken: String)(fetcher: (String, ID) => Future[CT]): Future[CT] = {
     val cacheName = cacheNameFor(entityId)
-    val maybeResult = cache.get[T](cacheName)
+    val maybeResult = cache.get[CT](cacheName)
 
     maybeResult.fold {
       logger.warn(s"Cache miss for $cacheName")

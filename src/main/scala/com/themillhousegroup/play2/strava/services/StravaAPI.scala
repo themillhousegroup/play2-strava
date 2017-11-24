@@ -44,7 +44,7 @@ object StravaAPI {
   private def allMyKOMsUrl(id: Long) = stravaV3BaseUrl + s"/athletes/${id}/koms"
   private def singleAthleteUrl(id: Long) = stravaV3BaseUrl + s"/athletes/${id}"
   private def allMyFriendsUrl(id: Long) = stravaV3BaseUrl + s"/athletes/${id}/friends"
-  private val createActivityUrl = s"https://www.strava.com/api/v3/activities"
+  private val createActivityUrl = "https://www.strava.com/api/v3/activities"
   private def singleActivityUrl(id: Long) = stravaV3BaseUrl + s"/activities/${id}"
   private def clubActivityUrl(id: String) = stravaV3BaseUrl + s"/clubs/${id}/activities"
   private def segmentUrl(id: Long) = stravaV3BaseUrl + s"/segments/${id}"

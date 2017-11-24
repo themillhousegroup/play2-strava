@@ -13,10 +13,10 @@ trait EssentialStravaSegment {
   val start_latlng: List[Double]
   val end_latlng: List[Double]
 
-  val startLatitude: Double = start_latlng.head
-  val startLongitude: Double = start_latlng.last
-  val endLatitude: Double = end_latlng.head
-  val endLongitude: Double = end_latlng.last
+  val startLatitude: Double = start_latlng.headOption.getOrElse(0D)
+  val startLongitude: Double = start_latlng.lastOption.getOrElse(0D)
+  val endLatitude: Double = end_latlng.headOption.getOrElse(0D)
+  val endLongitude: Double = end_latlng.lastOption.getOrElse(0D)
 }
 
 case class StravaSegmentSummary(
