@@ -2,7 +2,7 @@ package com.themillhousegroup.play2.strava.services
 
 import javax.inject.{ Inject, Singleton }
 
-import com.themillhousegroup.play2.strava.models.{ StravaSegment, StravaSegmentEffort }
+import com.themillhousegroup.play2.strava.models.{ StravaSegment, StravaSegmentEffort, StravaStreamObject }
 import com.themillhousegroup.play2.strava.services.traits.CachingStravaService
 import com.themillhousegroup.play2.strava.models._
 import play.api.Logger
@@ -25,7 +25,7 @@ class StravaSegmentService @Inject() (val stravaAPI: StravaAPI, val cache: Cache
   def withSegmentCacheFor(segmentId: Long, accessToken: String): Future[StravaSegment] =
     withCacheFor(segmentId, accessToken)(getSegment)
 
-  private def getSegment(stravaAccessToken: String, segmentId: Long): Future[StravaSegment] = {
+  def getSegment(stravaAccessToken: String, segmentId: Long): Future[StravaSegment] = {
 
     getWithBearerAuth(stravaAPI.segmentUrlFinder(segmentId), stravaAccessToken).map { response =>
       response.json.as[StravaSegment]
@@ -47,6 +47,24 @@ class StravaSegmentService @Inject() (val stravaAPI: StravaAPI, val cache: Cache
       }
 
     StravaAPI.paginate(paginatedSegmentEffort)
+  }
+
+  /**
+   * Stream types:
+   * time:	integer seconds
+   * latlng:	floats [latitude, longitude]
+   * distance:	float meters
+   * altitude:	float meters
+   */
+
+  def getSegmentStream(stravaAccessToken: String, segmentId: Long, streamType: String, resolution: Option[String], seriesType: Option[String]): Future[Seq[StravaStreamObject]] = {
+    getWithBearerAuth(stravaAPI.segmentStreamUrlFinder(segmentId, streamType, resolution, seriesType), stravaAccessToken).map { response =>
+      logger.debug(s"Dumping segment $segmentId stream response: \n$response")
+      response.status match {
+        case 200 => response.json.as[Seq[StravaStreamObject]]
+        case _ => Nil // Or throw exception?
+      }
+    }
   }
 
   /** Finds the unique set of activity IDs that hit the given segments between `since` and `until` */

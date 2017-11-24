@@ -49,7 +49,19 @@ object StravaAPI {
   private def clubActivityUrl(id: String) = stravaV3BaseUrl + s"/clubs/${id}/activities"
   private def segmentUrl(id: Long) = stravaV3BaseUrl + s"/segments/${id}"
   private def segmentEffortsUrl(id: Long) = stravaV3BaseUrl + s"/segments/${id}/all_efforts"
-  private def activityStreamUrl(id: Long,
+  private def activityStreamUrl(
+    id: Long,
+    streamType: String,
+    resolution: Option[String],
+    seriesType: Option[String]) = streamUrl(id, "activities", streamType, resolution, seriesType)
+
+  private def segmentStreamUrl(id: Long,
+    streamType: String,
+    resolution: Option[String],
+    seriesType: Option[String]) = streamUrl(id, "segments", streamType, resolution, seriesType)
+
+  private def streamUrl(id: Long,
+    baseType: String,
     streamType: String,
     resolution: Option[String],
     seriesType: Option[String]) = {
@@ -59,9 +71,8 @@ object StravaAPI {
     val finalOptionsString = resolutionOption.map { r =>
       s"$r$sType"
     }.getOrElse("")
-    stravaV3BaseUrl + s"/activities/${id}/streams/${streamType}${finalOptionsString}"
+    stravaV3BaseUrl + s"/${baseType}/${id}/streams/${streamType}${finalOptionsString}"
   }
-  private def segmentStreamUrl(id: Long, streamType: String) = stravaV3BaseUrl + s"/segments/${id}/streams/${streamType}"
 
   private val segmentExploreUrl = stravaV3BaseUrl + "/segments/explore"
 
@@ -102,6 +113,13 @@ class StravaAPI @Inject() (val wsClient: WSClient) {
     seriesType: Option[String]) = {
     wsClient.url(activityStreamUrl(activityId, streamType, resolution, seriesType))
   }
+  def segmentStreamUrlFinder(segmentId: Long,
+    streamType: String,
+    resolution: Option[String],
+    seriesType: Option[String]) = {
+    wsClient.url(segmentStreamUrl(segmentId, streamType, resolution, seriesType))
+  }
+
   def segmentUrlFinder(segmentId: Long) = wsClient.url(segmentUrl(segmentId))
   def segmentEffortsUrlFinder(segmentId: Long,
     maybeAthleteId: Option[Long] = None,
