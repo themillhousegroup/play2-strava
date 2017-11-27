@@ -1,7 +1,7 @@
 package com.themillhousegroup.play2.strava.models
 
 import play.api.libs.json.{ JsValue, Json }
-import org.joda.time.{ DateTimeZone, DateTime, Days }
+import org.joda.time.{ LocalDateTime, DateTimeZone, DateTime, Days }
 import org.apache.commons.lang3.StringUtils
 import org.joda.time
 
@@ -21,11 +21,14 @@ trait EssentialStravaActivity extends EssentialStravaEntity {
   val commute: Boolean
   val `private`: Boolean
   val start_date: String
+  val start_date_local: String
   val timezone: String
   val `type`: String
   val total_elevation_gain: Double
   val moving_time: Int
   val elapsed_time: Int
+
+  // TODO this is common with SegmentEffort time processing - extract
 
   private val millis: Long = DateTime.parse(start_date).getMillis
   private val javaTZ: String = StravaActivity.tzRegex.findFirstMatchIn(timezone).fold("UTC") { m =>
@@ -33,6 +36,8 @@ trait EssentialStravaActivity extends EssentialStravaEntity {
   }
 
   lazy val at = new time.DateTime(millis, DateTimeZone.forID(javaTZ))
+
+  lazy val atLocal = LocalDateTime.parse(start_date_local)
 
   val movingTimeSeconds = moving_time
   val totalTimeSeconds = elapsed_time
@@ -48,6 +53,7 @@ case class StravaActivitySummary(
   distance: Double,
   `type`: String,
   start_date: String,
+  start_date_local: String,
   timezone: String,
   moving_time: Int,
   elapsed_time: Int,
@@ -66,6 +72,7 @@ case class StravaActivity(
     total_elevation_gain: Double,
     `type`: String,
     start_date: String,
+    start_date_local: String,
     timezone: String,
     location_city: Option[String],
     location_state: Option[String],
@@ -89,6 +96,7 @@ case class StravaActivityPerformanceAspects(
     total_elevation_gain: Double,
     `type`: String,
     start_date: String,
+    start_date_local: String,
     timezone: String,
     average_speed: Double,
     max_speed: Double,
