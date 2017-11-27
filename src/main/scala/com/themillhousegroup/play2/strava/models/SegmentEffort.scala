@@ -24,4 +24,9 @@ case class StravaSegmentEffort(id: Long,
   start_date_local: String,
   segment: StravaSegmentSummary,
   moving_time: Int,
-  average_watts: Double) extends EssentialStravaSegmentEffort
+  average_cadence: Option[Double],
+  average_watts: Double,
+  average_heartrate: Option[Double],
+  max_heartrate: Option[Double],
+  pr_rank: Option[Int],
+  kom_rank: Option[Int]) extends EssentialStravaSegmentEffort
