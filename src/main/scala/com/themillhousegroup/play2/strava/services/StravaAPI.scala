@@ -14,9 +14,23 @@ import org.apache.commons.lang3.StringUtils
 
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
-import org.joda.time.{ LocalDateTime, DateTime }
+import org.joda.time.{ DateTime, LocalDateTime }
 
 object StravaAPI {
+
+  val stravaV3BaseUrl = "https://www.strava.com/api/v3"
+
+  object Athlete {
+    val allMyActivitiesUrl = stravaV3BaseUrl + "/athlete/activities"
+  }
+
+  object Athletes {
+    private val athletesEndpoint = stravaV3BaseUrl + "/athletes"
+    def singleAthleteUrl(id: Long) = athletesEndpoint + s"/${id}"
+    def allMyKOMsUrl(id: Long) = singleAthleteUrl(id) + "/koms"
+    def allMyFriendsUrl(id: Long) = singleAthleteUrl(id) + "/friends"
+  }
+
   val dateFormat = ISODateTimeFormat.dateTimeNoMillis()
 
   private val perPageParam = "per_page"
@@ -39,11 +53,6 @@ object StravaAPI {
     }
   }
 
-  private val stravaV3BaseUrl = "https://www.strava.com/api/v3"
-  private val allMyActivitiesUrl = stravaV3BaseUrl + "/athlete/activities"
-  private def allMyKOMsUrl(id: Long) = stravaV3BaseUrl + s"/athletes/${id}/koms"
-  private def singleAthleteUrl(id: Long) = stravaV3BaseUrl + s"/athletes/${id}"
-  private def allMyFriendsUrl(id: Long) = stravaV3BaseUrl + s"/athletes/${id}/friends"
   private val createActivityUrl = "https://www.strava.com/api/v3/activities"
   private def singleActivityUrl(id: Long) = stravaV3BaseUrl + s"/activities/${id}"
   private def clubActivityUrl(id: String) = stravaV3BaseUrl + s"/clubs/${id}/activities"
@@ -85,24 +94,24 @@ class StravaAPI @Inject() (val wsClient: WSClient) {
 
   //  def urlFinder(id:Option[String]) = id.fold(WS.url(listUrl))(i => WS.url(singleActivityUrl(i)))
 
-  def withPaginationQueryString(page: Int)(req: WSRequest) = {
+  private def withPaginationQueryString(page: Int)(req: WSRequest) = {
     req.withQueryString(pageParam -> page.toString, perPageParam -> maxPageSize.toString)
   }
 
   def allMyActivitiesFinder(page: Int) = withPaginationQueryString(page) {
-    wsClient.url(allMyActivitiesUrl)
+    wsClient.url(StravaAPI.Athlete.allMyActivitiesUrl)
   }
 
   val createActivityFinder = wsClient.url(createActivityUrl)
 
   def allMyKOMsFinder(athleteId: Long, page: Int) = withPaginationQueryString(page) {
-    wsClient.url(allMyKOMsUrl(athleteId))
+    wsClient.url(StravaAPI.Athletes.allMyKOMsUrl(athleteId))
   }
 
-  def athleteFinder(athleteId: Long) = wsClient.url(singleAthleteUrl(athleteId))
+  def athleteFinder(athleteId: Long) = wsClient.url(StravaAPI.Athletes.singleAthleteUrl(athleteId))
 
   def allMyFriendsFinder(athleteId: Long, page: Int) = withPaginationQueryString(page) {
-    wsClient.url(allMyFriendsUrl(athleteId))
+    wsClient.url(StravaAPI.Athletes.allMyFriendsUrl(athleteId))
   }
 
   def singleActivityUrlFinder(activityId: Long) = wsClient.url(singleActivityUrl(activityId))

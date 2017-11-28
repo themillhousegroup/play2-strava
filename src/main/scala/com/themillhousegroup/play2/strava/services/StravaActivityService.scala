@@ -16,16 +16,7 @@ import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
 import org.joda.time.{DateTime, LocalDateTime}
 
 @Singleton
-class  StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) {
-
-
-  var fifteenMinuteUsage:Option[Int] = None
-  var dailyUsage:Option[Int] = None
-
-  val fifteenMinuteRequestLimit=600
-  val dailyRequestLimit=30000
-
-  val oneDay = Duration(24, "hours")
+class StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) {
 
   val logger = Logger("StravaActivityService")
 
@@ -39,7 +30,7 @@ class  StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) 
     */
   def listActivitiesFor(stravaAccessToken:String, maybePage:Option[Int] = None):Future[Seq[StravaActivity]] = {
     getWithBearerAuth(stravaAPI.allMyActivitiesFinder(maybePage.getOrElse(1)), stravaAccessToken).map { response =>
-      response.json.as[Seq[StravaActivity]].filter(_.`type` == "Ride")
+      response.json.as[Seq[StravaActivity]]
     }
   }
 

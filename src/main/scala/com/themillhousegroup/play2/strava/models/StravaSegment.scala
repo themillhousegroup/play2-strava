@@ -30,7 +30,7 @@ case class StravaSegmentSummary(
     start_latlng: List[Double],
     end_latlng: List[Double]) extends EssentialStravaSegment {
 
-  lazy val elevationGain:Double = elevation_high - elevation_low
+  lazy val elevationGain: Double = elevation_high - elevation_low
 
 }
 
