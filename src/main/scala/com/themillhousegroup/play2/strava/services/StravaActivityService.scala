@@ -94,7 +94,8 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) {
   }
 
   def listActivityPhotos(stravaAccessToken:String, activityId:Long, sizePx:Option[Int]):Future[Seq[EssentialStravaActivityPhoto]] = {
-    getWithBearerAuth(stravaAPI.activityPhotosUrlFinder(activityId, sizePx), stravaAccessToken).map { response =>
+    getWithBearerAuth(
+      stravaAPI.activityPhotosUrlFinder(activityId, sizePx), stravaAccessToken).map { response =>
       response.json.as[Seq[EssentialStravaActivityPhoto]].sorted
     }
   }
