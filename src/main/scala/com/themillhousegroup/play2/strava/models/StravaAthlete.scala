@@ -1,6 +1,7 @@
 package com.themillhousegroup.play2.strava.models
 
-trait EssentialStravaAthlete extends EssentialStravaEntity {
+trait EssentialStravaAthlete {
+  val id: Long
   val firstname: String
   val lastname: String
   val sex: Option[String]

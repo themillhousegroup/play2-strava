@@ -62,8 +62,8 @@ object EssentialStravaActivityPhoto {
     override def reads(json: JsValue): JsResult[EssentialStravaActivityPhoto] = {
       (json \ "source").validate[Int].flatMap { src =>
         src match {
-          case 2 => StravaJson.instaPhotoReads.reads(json)
-          case _ => StravaJson.stravaPhotoReads.reads(json)
+          case 2 => StravaPhotoJson.instaPhotoReads.reads(json)
+          case _ => StravaPhotoJson.stravaPhotoReads.reads(json)
         }
       }
     }

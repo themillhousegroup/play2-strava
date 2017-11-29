@@ -6,12 +6,13 @@ import com.themillhousegroup.play2.strava.models._
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import StravaJson._
 import play.api.cache.CacheApi
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import com.themillhousegroup.play2.strava.services.traits.CachingStravaService
 import play.api.Logger
 import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
+import StravaAthleteJson._
+import StravaSegmentJson._
 
 @Singleton
 class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: CacheApi)

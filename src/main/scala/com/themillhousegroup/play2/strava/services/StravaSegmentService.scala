@@ -10,7 +10,8 @@ import play.api.cache.CacheApi
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
 import org.joda.time.LocalDateTime
-import StravaJson._
+import StravaSegmentJson._
+import StravaStreamJson._
 
 import scala.concurrent.Future
 

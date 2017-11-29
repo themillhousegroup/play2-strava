@@ -7,16 +7,16 @@ import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Format
-import scala.concurrent.Future
-import scala.concurrent.duration.Duration
-import com.themillhousegroup.play2.strava.models._
-import StravaJson._
 
+import scala.concurrent.Future
+import com.themillhousegroup.play2.strava.models._
+import StravaActivityJson._
 import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
+import com.themillhousegroup.play2.strava.services.helpers.StandardRequestResponseHelper
 import org.joda.time.{DateTime, LocalDateTime}
 
 @Singleton
-class StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) {
+class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:StandardRequestResponseHelper, cacheApi:CacheApi) {
 
   val logger = Logger("StravaActivityService")
 
@@ -29,16 +29,18 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) {
     * -d per_page=1
     */
   def listActivitiesFor(stravaAccessToken:String, maybePage:Option[Int] = None):Future[Seq[StravaActivity]] = {
-    getWithBearerAuth(stravaAPI.allMyActivitiesFinder(maybePage.getOrElse(1)), stravaAccessToken).map { response =>
-      response.json.as[Seq[StravaActivity]]
-    }
+    requester.seq(
+      stravaAccessToken,
+      stravaAPI.allMyActivitiesFinder(maybePage.getOrElse(1))
+    )
   }
 
   /** Supply the activity type you want to deserialize to, and the Format to do it with */
   def getSingleActivity[SA <: EssentialStravaActivity](stravaAccessToken:String, id:Long)(fmt:Format[SA]):Future[SA] = {
-    getWithBearerAuth(stravaAPI.singleActivityUrlFinder(id), stravaAccessToken).map { response =>
-      response.json.as[SA](fmt)
-    }
+    requester(
+      stravaAccessToken,
+      stravaAPI.singleActivityUrlFinder(id)
+    )(fmt)
   }
 
   /** Supply None as the 'resolution' param to get "ALL".
@@ -62,6 +64,7 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) {
     *
     */
   def getActivityStream(stravaAccessToken:String, id:Long, streamType:String, resolution:Option[String], seriesType:Option[String]):Future[Seq[StravaStreamObject]] = {
+    import StravaStreamJson._
     getWithBearerAuth(stravaAPI.activityStreamUrlFinder(id, streamType, resolution, seriesType), stravaAccessToken).map { response =>
 
       val respJson = response.json
@@ -74,6 +77,7 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) {
     val afterInSecondsFromEpoch = time.getMillis / 1000
     logger.info(s"Requesting Strava entries for $stravaAccessToken AFTER $afterInSecondsFromEpoch")
 
+    import StravaActivitySummaryJson._
     val paginatedActivityList = (page:Int) =>
 
       withBearerAuth(stravaAPI.allMyActivitiesFinder(page), stravaAccessToken)

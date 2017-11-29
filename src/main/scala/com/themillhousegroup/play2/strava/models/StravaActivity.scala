@@ -14,7 +14,8 @@ object StravaActivity {
     }
 }
 
-trait EssentialStravaActivity extends EssentialStravaEntity {
+trait EssentialStravaActivity {
+  val id: Long
   val name: String
   val distance: Double
   val manual: Boolean
