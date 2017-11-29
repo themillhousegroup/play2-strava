@@ -81,7 +81,7 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, cache:CacheApi) {
         response.json.as[Seq[StravaActivitySummary]]
       }
 
-    StravaAPI.paginate(paginatedActivityList).map { unfiltered =>
+    StravaAPI.depaginate(paginatedActivityList).map { unfiltered =>
       try {
         val filtered = unfiltered.filter(_.`type` == "Ride")
         logger.info(s"Token $stravaAccessToken has ${unfiltered.size} Strava activities, filtered to ${filtered.size}")

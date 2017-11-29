@@ -39,11 +39,12 @@ object StravaAPI {
 
   private val logger = Logger("StravaAPI")
 
-  def paginate[T](apiCall: Int => Future[Seq[T]], pageNumber: Int = 1): Future[Seq[T]] = {
+  /** Automatically loop around for more results in a paginated query */
+  def depaginate[T](apiCall: Int => Future[Seq[T]], pageNumber: Int = 1): Future[Seq[T]] = {
     apiCall(pageNumber).flatMap { listOfThings =>
       if (listOfThings.size == StravaAPI.maxPageSize) {
         logger.info("API call returned MAX things; looping for more")
-        paginate(apiCall, pageNumber + 1).map { moreThings =>
+        depaginate(apiCall, pageNumber + 1).map { moreThings =>
           listOfThings ++ moreThings
         }
       } else {
@@ -94,47 +95,47 @@ class StravaAPI @Inject() (val wsClient: WSClient) {
 
   //  def urlFinder(id:Option[String]) = id.fold(WS.url(listUrl))(i => WS.url(singleActivityUrl(i)))
 
-  private def withPaginationQueryString(page: Int)(req: WSRequest) = {
+  private def withPaginationQueryString(page: Int)(req: WSRequest): WSRequest = {
     req.withQueryString(pageParam -> page.toString, perPageParam -> maxPageSize.toString)
   }
 
-  def allMyActivitiesFinder(page: Int) = withPaginationQueryString(page) {
+  def allMyActivitiesFinder(page: Int): WSRequest = withPaginationQueryString(page) {
     wsClient.url(StravaAPI.Athlete.allMyActivitiesUrl)
   }
 
-  val createActivityFinder = wsClient.url(createActivityUrl)
+  val createActivityFinder = wsClient.url(createActivityUrl): WSRequest
 
-  def allMyKOMsFinder(athleteId: Long, page: Int) = withPaginationQueryString(page) {
+  def allMyKOMsFinder(athleteId: Long, page: Int): WSRequest = withPaginationQueryString(page) {
     wsClient.url(StravaAPI.Athletes.allMyKOMsUrl(athleteId))
   }
 
-  def athleteFinder(athleteId: Long) = wsClient.url(StravaAPI.Athletes.singleAthleteUrl(athleteId))
+  def athleteFinder(athleteId: Long): WSRequest = wsClient.url(StravaAPI.Athletes.singleAthleteUrl(athleteId))
 
-  def allMyFriendsFinder(athleteId: Long, page: Int) = withPaginationQueryString(page) {
+  def allMyFriendsFinder(athleteId: Long, page: Int): WSRequest = withPaginationQueryString(page) {
     wsClient.url(StravaAPI.Athletes.allMyFriendsUrl(athleteId))
   }
 
-  def singleActivityUrlFinder(activityId: Long) = wsClient.url(singleActivityUrl(activityId))
-  def clubActivityUrlFinder(clubId: String) = wsClient.url(clubActivityUrl(clubId))
+  def singleActivityUrlFinder(activityId: Long): WSRequest = wsClient.url(singleActivityUrl(activityId))
+  def clubActivityUrlFinder(clubId: String): WSRequest = wsClient.url(clubActivityUrl(clubId))
   def activityStreamUrlFinder(activityId: Long,
     streamType: String,
     resolution: Option[String],
-    seriesType: Option[String]) = {
+    seriesType: Option[String]): WSRequest = {
     wsClient.url(activityStreamUrl(activityId, streamType, resolution, seriesType))
   }
   def segmentStreamUrlFinder(segmentId: Long,
     streamType: String,
     resolution: Option[String],
-    seriesType: Option[String]) = {
+    seriesType: Option[String]): WSRequest = {
     wsClient.url(segmentStreamUrl(segmentId, streamType, resolution, seriesType))
   }
 
-  def segmentUrlFinder(segmentId: Long) = wsClient.url(segmentUrl(segmentId))
+  def segmentUrlFinder(segmentId: Long): WSRequest = wsClient.url(segmentUrl(segmentId))
   def segmentEffortsUrlFinder(segmentId: Long,
     maybeAthleteId: Option[Long] = None,
     maybeStartFrom: Option[LocalDateTime] = None,
     maybeEndAt: Option[LocalDateTime] = None,
-    page: Int) = {
+    page: Int): WSRequest = {
     logger.info(s"Requesting page $page of segment efforts for segment $segmentId ${maybeAthleteId.fold("")(aid => s"(athlete id $aid)")}")
 
     maybeStartFrom.fold(wsClient.url(segmentEffortsUrl(segmentId))) { startFrom =>
@@ -151,10 +152,10 @@ class StravaAPI @Inject() (val wsClient: WSClient) {
     }.withQueryString(pageParam -> page.toString, perPageParam -> maxPageSize.toString)
   }
 
-  def segmentExplorer(minLat: Double, minLon: Double, maxLat: Double, maxLon: Double) = {
+  def segmentExplorer(minLat: Double, minLon: Double, maxLat: Double, maxLon: Double): WSRequest = {
     val boundsString = s"$minLat,$minLon,$maxLat,$maxLon"
     wsClient.url(segmentExploreUrl).withQueryString("bounds" -> boundsString)
   }
 
-  def activityPhotosUrlFinder(activityId: Long, sizePx: Option[Int]) = wsClient.url(activityPhotosUrl(activityId, sizePx))
+  def activityPhotosUrlFinder(activityId: Long, sizePx: Option[Int]): WSRequest = wsClient.url(activityPhotosUrl(activityId, sizePx))
 }

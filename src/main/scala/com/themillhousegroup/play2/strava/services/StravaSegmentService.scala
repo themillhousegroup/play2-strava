@@ -46,7 +46,7 @@ class StravaSegmentService @Inject() (val stravaAPI: StravaAPI, val cache: Cache
         }
       }
 
-    StravaAPI.paginate(paginatedSegmentEffort)
+    StravaAPI.depaginate(paginatedSegmentEffort)
   }
 
   /**

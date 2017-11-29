@@ -36,7 +36,7 @@ class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: Cache
         response.json.as[Seq[StravaAthleteSummary]]
       }
 
-    StravaAPI.paginate(paginatedFriendsList)
+    StravaAPI.depaginate(paginatedFriendsList)
   }
 
   val komCacheExpiry = Duration(3, "hours")
@@ -54,6 +54,6 @@ class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: Cache
         response.json.as[Seq[StravaSegmentEffort]]
       }
 
-    StravaAPI.paginate(paginatedKOMList)
+    StravaAPI.depaginate(paginatedKOMList)
   }
 }
