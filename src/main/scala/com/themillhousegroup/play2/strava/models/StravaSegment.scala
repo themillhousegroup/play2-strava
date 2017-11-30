@@ -1,6 +1,6 @@
 package com.themillhousegroup.play2.strava.models
 
-import org.joda.time.{ DateTime, Days }
+import org.joda.time.DateTime
 
 trait EssentialStravaSegment {
   val id: Long
@@ -53,22 +53,5 @@ case class StravaSegment(
     end_latlng: List[Double]) extends EssentialStravaSegment {
 
   lazy val createdAtMillis: Long = DateTime.parse(created_at).getMillis
-
-  lazy val segmentAgeDays: Int = Days.daysBetween(new DateTime(createdAtMillis), new DateTime()).getDays
-
-  // popularity is :
-  // efforts / num-athletes = (efforts per athlete) / days segment has existed
-
-  // e.g. a segment I just created a day ago, and I am the only one, and I did it twice
-
-  // 2 / 1 = 2 / 1 = 2
-
-  lazy val effortsPerDay: Double = effort_count / segmentAgeDays.toDouble
-
-  lazy val popularity: Double = effortsPerDay * athlete_count
-
-  lazy val difficulty = Math.abs(average_grade) * distance
-
-  lazy val overallRating = ((popularity * difficulty) / 1000).toInt
 }
 
