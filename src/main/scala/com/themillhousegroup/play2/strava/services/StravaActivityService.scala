@@ -2,7 +2,6 @@ package com.themillhousegroup.play2.strava.services
 
 import javax.inject.{Inject, Singleton}
 
-import org.apache.commons.lang3.exception.ExceptionUtils
 import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -10,10 +9,9 @@ import play.api.libs.json.Format
 
 import scala.concurrent.Future
 import com.themillhousegroup.play2.strava.models._
-import StravaActivityJson._
 import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
 import com.themillhousegroup.play2.strava.services.helpers.StandardRequestResponseHelper
-import org.joda.time.{DateTime, LocalDateTime}
+import org.joda.time.DateTime
 
 @Singleton
 class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:StandardRequestResponseHelper, cacheApi:CacheApi) {
@@ -29,6 +27,7 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:Standar
     * -d per_page=1
     */
   def listActivitiesFor(stravaAccessToken:String, maybePage:Option[Int] = None):Future[Seq[StravaActivity]] = {
+    import StravaActivityJson._
     requester.seq(
       stravaAccessToken,
       stravaAPI.allMyActivitiesFinder(maybePage.getOrElse(1))
@@ -65,12 +64,10 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:Standar
     */
   def getActivityStream(stravaAccessToken:String, id:Long, streamType:String, resolution:Option[String], seriesType:Option[String]):Future[Seq[StravaStreamObject]] = {
     import StravaStreamJson._
-    getWithBearerAuth(stravaAPI.activityStreamUrlFinder(id, streamType, resolution, seriesType), stravaAccessToken).map { response =>
-
-      val respJson = response.json
-      logger.debug(s"Response for $streamType is: $respJson")
-      respJson.as[Seq[StravaStreamObject]]
-    }
+    requester.seq(
+      stravaAccessToken,
+      stravaAPI.activityStreamUrlFinder(id, streamType, resolution, seriesType)
+    )
   }
 
   def listActivitiesAfter(stravaAccessToken:String, time:DateTime):Future[Seq[StravaActivitySummary]] = {
@@ -85,22 +82,15 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:Standar
         response.json.as[Seq[StravaActivitySummary]]
       }
 
-    StravaAPI.depaginate(paginatedActivityList).map { unfiltered =>
-      try {
-        val filtered = unfiltered.filter(_.`type` == "Ride")
-        logger.info(s"Token $stravaAccessToken has ${unfiltered.size} Strava activities, filtered to ${filtered.size}")
-
-        filtered
-      } catch {
-        case t:Throwable => logger.error(s"Activity parsing fail: ${ExceptionUtils.getStackTrace(t)}"); Nil
-      }
-    }
+    StravaAPI.depaginate(paginatedActivityList)
   }
 
   def listActivityPhotos(stravaAccessToken:String, activityId:Long, sizePx:Option[Int]):Future[Seq[EssentialStravaActivityPhoto]] = {
-    getWithBearerAuth(
-      stravaAPI.activityPhotosUrlFinder(activityId, sizePx), stravaAccessToken).map { response =>
-      response.json.as[Seq[EssentialStravaActivityPhoto]].sorted
+    requester.seq(
+      stravaAccessToken,
+      stravaAPI.activityPhotosUrlFinder(activityId, sizePx)
+    )(EssentialStravaActivityPhoto.esapReads).map { photos =>
+      photos.sorted
     }
   }
 }
