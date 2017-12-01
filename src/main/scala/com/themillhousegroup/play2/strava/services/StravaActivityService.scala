@@ -35,7 +35,7 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:Standar
   }
 
   /** Supply the activity type you want to deserialize to, and the Format to do it with */
-  def getSingleActivity[SA <: EssentialStravaActivity](stravaAccessToken:String, id:Long)(fmt:Format[SA]):Future[SA] = {
+  def getSingleActivity[SA <: EssentialStravaActivity](stravaAccessToken:String, id:Long)(fmt:Format[SA]):Future[Option[SA]] = {
     requester(
       stravaAccessToken,
       stravaAPI.singleActivityUrlFinder(id)
