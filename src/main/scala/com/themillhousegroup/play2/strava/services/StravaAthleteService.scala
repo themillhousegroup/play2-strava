@@ -10,32 +10,31 @@ import play.api.cache.CacheApi
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import com.themillhousegroup.play2.strava.services.traits.CachingStravaService
 import play.api.Logger
-import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
-import StravaAthleteJson._
-import StravaSegmentJson._
+import com.themillhousegroup.play2.strava.services.helpers.StandardRequestResponseHelper
 
 @Singleton
-class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: CacheApi)
+class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: CacheApi, val requester: StandardRequestResponseHelper)
     extends CachingStravaService[Long] {
 
   val logger = Logger("StravaAthleteService")
 
   def getFullAthleteInfo(stravaAccessToken: String, athleteId: Long): Future[Option[StravaAthlete]] = {
-    getWithBearerAuth(stravaAPI.athleteFinder(athleteId), stravaAccessToken).map { response =>
-      if (response.status == 200) {
-        Some(response.json.as[StravaAthlete])
-      } else {
-        None
-      }
-    }
+    import StravaAthleteJson._
+
+    requester(
+      stravaAccessToken,
+      stravaAPI.athleteFinder(athleteId)
+    )
   }
 
-  def listFriendsFor(stravaAccessToken: String, athleteId: Long): Future[Seq[EssentialStravaAthlete]] = {
+  def listFriendsFor(stravaAccessToken: String, athleteId: Long): Future[Seq[StravaAthlete]] = {
+    import StravaAthleteJson._
+
     val paginatedFriendsList = (page: Int) =>
-      getWithBearerAuth(stravaAPI.allMyFriendsFinder(athleteId, page), stravaAccessToken).map { response =>
-        logger.info(s"Friends response for athlete $athleteId, page $page: using token: $stravaAccessToken \n${response.json}")
-        response.json.as[Seq[StravaAthleteSummary]]
-      }
+      requester.seq(
+        stravaAccessToken,
+        stravaAPI.allMyFriendsFinder(athleteId, page)
+      )
 
     StravaAPI.depaginate(paginatedFriendsList)
   }
@@ -48,12 +47,13 @@ class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: Cache
     withCacheFor(athleteId, accessToken)(listKOMsFor)
 
   private def listKOMsFor(stravaAccessToken: String, athleteId: Long): Future[Seq[StravaSegmentEffort]] = {
+    import StravaSegmentJson.stravaSegmentEffortFormat
 
     val paginatedKOMList = (page: Int) =>
-      getWithBearerAuth(stravaAPI.allMyKOMsFinder(athleteId, page), stravaAccessToken).map { response =>
-        logger.info(s"KOMS response for athlete $athleteId, page $page: using token: $stravaAccessToken \n${response.json}")
-        response.json.as[Seq[StravaSegmentEffort]]
-      }
+      requester.seq(
+        stravaAccessToken,
+        stravaAPI.allMyKOMsFinder(athleteId, page)
+      )
 
     StravaAPI.depaginate(paginatedKOMList)
   }

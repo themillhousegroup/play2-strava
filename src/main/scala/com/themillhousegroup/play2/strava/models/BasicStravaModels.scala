@@ -18,7 +18,6 @@ trait StravaJson {
 
 object StravaAthleteJson {
   implicit val stravaAthleteFormat = Json.format[StravaAthlete]
-  implicit val stravaAthleteSummaryFormat = Json.format[StravaAthleteSummary]
 }
 
 object StravaPhotoJson {

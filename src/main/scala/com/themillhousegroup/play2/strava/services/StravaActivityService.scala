@@ -76,11 +76,10 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:Standar
 
     import StravaActivitySummaryJson._
     val paginatedActivityList = (page:Int) =>
-
-      withBearerAuth(stravaAPI.allMyActivitiesFinder(page), stravaAccessToken)
-        .withQueryString("after" -> afterInSecondsFromEpoch.toString).get().map { response =>
-        response.json.as[Seq[StravaActivitySummary]]
-      }
+      requester.seq(
+        stravaAccessToken,
+        stravaAPI.allMyActivitiesFinder(page).withQueryString("after" -> afterInSecondsFromEpoch.toString)
+      )
 
     StravaAPI.depaginate(paginatedActivityList)
   }

@@ -13,15 +13,6 @@ trait EssentialStravaAthlete {
   lazy val name = s"$firstname $lastname"
 }
 
-case class StravaAthleteSummary(
-  id: Long,
-  resource_state: Int,
-  firstname: String,
-  lastname: String,
-  sex: Option[String],
-  profile_medium: String,
-  profile: String) extends EssentialStravaAthlete
-
 case class StravaAthlete(
   id: Long,
   resource_state: Int,
