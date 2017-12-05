@@ -75,12 +75,10 @@ case class StravaActivity(
     start_date: String,
     start_date_local: String,
     timezone: String,
-    location_city: Option[String],
-    location_state: Option[String],
-    location_country: Option[String],
     manual: Boolean,
     commute: Boolean,
     `private`: Boolean,
+    device_name: Option[String],
     description: Option[String] = None,
     segment_efforts: Option[List[StravaSegmentEffort]] = None) extends EssentialStravaActivity {
 
