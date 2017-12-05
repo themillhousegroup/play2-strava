@@ -4,10 +4,13 @@ import play.api.libs.json.Reads
 import play.api.libs.ws.{ WSRequest, WSResponse }
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
+import play.api.Logger
 
 import scala.concurrent.Future
 
 class StandardRequestResponseHelper {
+
+  private val logger = Logger(classOf[StandardRequestResponseHelper])
 
   private def asyncWrap[R](syncResponseHandler: WSResponse => R): WSResponse => Future[R] = { resp =>
     Future(syncResponseHandler(resp))
@@ -15,14 +18,28 @@ class StandardRequestResponseHelper {
 
   private def defaultResponseHandler[T](implicit rds: Reads[T]): WSResponse => Option[T] = { response =>
     if (response.status == 200) {
-      response.json.asOpt[T]
+      val validationResult = response.json.validate[T]
+
+      if (validationResult.isError) {
+        val message = s"Conversion of ${response.json} was unsuccessful; ${validationResult.toString}; returning a None"
+        logger.warn(message)
+      }
+
+      validationResult.asOpt
     } else {
       None
     }
   }
   private def defaultSeqResponseHandler[T](implicit rds: Reads[T]): WSResponse => Seq[T] = { response =>
     if (response.status == 200) {
-      response.json.as[Seq[T]]
+      val validationResult = response.json.validate[Seq[T]]
+
+      if (validationResult.isError) {
+        val message = s"Conversion of ${response.json} was unsuccessful; ${validationResult.toString}; returning a Nil"
+        logger.warn(message)
+      }
+
+      validationResult.getOrElse(Nil)
     } else {
       Nil
     }
@@ -30,6 +47,7 @@ class StandardRequestResponseHelper {
 
   def apply[T](stravaAccessToken: String,
     request: WSRequest)(implicit rds: Reads[T]): Future[Option[T]] = {
+
     apply(
       stravaAccessToken,
       request,
@@ -60,7 +78,8 @@ class StandardRequestResponseHelper {
   def async[T](stravaAccessToken: String,
     request: WSRequest,
     responseHandler: WSResponse => Future[Option[T]])(implicit rds: Reads[T]): Future[Option[T]] = {
-    getWithBearerAuth(request, stravaAccessToken).flatMap(responseHandler)
+
+    makeRequest(stravaAccessToken, request, responseHandler)
   }
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -98,6 +117,13 @@ class StandardRequestResponseHelper {
   def asyncSeq[T](stravaAccessToken: String,
     request: WSRequest,
     responseHandler: WSResponse => Future[Seq[T]])(implicit rds: Reads[T]): Future[Seq[T]] = {
+
+    makeRequest(stravaAccessToken, request, responseHandler)
+  }
+
+  private def makeRequest[T, R](stravaAccessToken: String,
+    request: WSRequest,
+    responseHandler: WSResponse => Future[R])(implicit rds: Reads[T]): Future[R] = {
     getWithBearerAuth(request, stravaAccessToken).flatMap(responseHandler)
   }
 }
