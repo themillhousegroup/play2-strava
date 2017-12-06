@@ -18,6 +18,9 @@ class StandardRequestResponseHelper {
 
   private def defaultResponseHandler[T](implicit rds: Reads[T]): WSResponse => Option[T] = { response =>
     if (response.status == 200) {
+
+      logger.trace(s"Attempting conversion of:\n${response.json}")
+
       val validationResult = response.json.validate[T]
 
       if (validationResult.isError) {
@@ -27,11 +30,15 @@ class StandardRequestResponseHelper {
 
       validationResult.asOpt
     } else {
+      logger.warn(s"Encountered response code ${response.status} - message: ${response.body}")
       None
     }
   }
   private def defaultSeqResponseHandler[T](implicit rds: Reads[T]): WSResponse => Seq[T] = { response =>
     if (response.status == 200) {
+
+      logger.trace(s"Attempting conversion of:\n${response.json}")
+
       val validationResult = response.json.validate[Seq[T]]
 
       if (validationResult.isError) {
@@ -41,6 +48,7 @@ class StandardRequestResponseHelper {
 
       validationResult.getOrElse(Nil)
     } else {
+      logger.warn(s"Encountered response code ${response.status} - message: ${response.body}")
       Nil
     }
   }

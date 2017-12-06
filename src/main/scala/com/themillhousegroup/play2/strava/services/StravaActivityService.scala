@@ -16,7 +16,7 @@ import org.joda.time.DateTime
 @Singleton
 class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:StandardRequestResponseHelper, cacheApi:CacheApi) {
 
-  val logger = Logger("StravaActivityService")
+  val logger = Logger(classOf[StravaActivityService])
 
   /**
     * https://strava.github.io/api/v3/activities/#get-activities

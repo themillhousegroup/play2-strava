@@ -13,16 +13,17 @@ trait UsageMonitoring {
     response.header("X-Ratelimit-Usage").map { usage =>
       val parts = usage.split(",")
       fifteenMinuteUsage = parts.headOption.map(_.toInt)
-      logger.info(s"Last 15 minute usage: $fifteenMinuteUsage")
       dailyUsage = parts.lastOption.map(_.toInt)
     }
 
     response.header("X-RateLimit-Limit").map { limits =>
       val parts = limits.split(",")
       fifteenMinuteRequestLimit = parts.headOption.map(_.toInt).getOrElse(0)
-      logger.info(s"Last 15 minute usage: $fifteenMinuteUsage")
       dailyRequestLimit = parts.lastOption.map(_.toInt).getOrElse(0)
     }
+
+    logger.trace(s"Last 15 minute usage: $fifteenMinuteUsage / $fifteenMinuteRequestLimit")
+    logger.trace(s"Daily usage: $dailyUsage / $dailyRequestLimit")
 
     response
   }
