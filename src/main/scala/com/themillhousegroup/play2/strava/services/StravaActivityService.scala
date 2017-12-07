@@ -26,8 +26,8 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:Standar
     * -H "Authorization: Bearer 83ebeabdec09f6670863766f792ead24d61fe3f9"
     * -d per_page=1
     */
-  def listActivitiesFor(stravaAccessToken:String, maybePage:Option[Int] = None):Future[Seq[StravaActivity]] = {
-    import StravaActivityJson._
+  def listActivitiesFor(stravaAccessToken:String, maybePage:Option[Int] = None):Future[Seq[StravaActivitySummary]] = {
+    import StravaActivitySummaryJson._
     requester.seq(
       stravaAccessToken,
       stravaAPI.allMyActivitiesFinder(maybePage.getOrElse(1))
