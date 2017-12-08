@@ -1,15 +1,18 @@
 package com.themillhousegroup.play2.strava.services.traits
 
+import javax.inject.Singleton
+
 import scala.concurrent.Future
 import play.api.libs.ws._
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-trait UsageMonitoring {
+@Singleton
+class UsageMonitoring {
 
-  protected val logger: Logger
+  private val logger = Logger(classOf[UsageMonitoring])
 
-  protected def updateUsage(response: WSResponse): WSResponse = {
+  def updateUsage(response: WSResponse): WSResponse = {
     response.header("X-Ratelimit-Usage").map { usage =>
       val parts = usage.split(",")
       fifteenMinuteUsage = parts.headOption.map(_.toInt)

@@ -1,14 +1,15 @@
 package com.themillhousegroup.play2.strava.services.helpers
 
+import javax.inject.Inject
+
 import play.api.libs.json.Reads
 import play.api.libs.ws.{ WSRequest, WSResponse }
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
 import play.api.Logger
 
 import scala.concurrent.Future
 
-class StandardRequestResponseHelper {
+class StandardRequestResponseHelper @Inject() (val authBearer: AuthBearer) {
 
   private val logger = Logger(classOf[StandardRequestResponseHelper])
 
@@ -132,6 +133,6 @@ class StandardRequestResponseHelper {
   private def makeRequest[T, R](stravaAccessToken: String,
     request: WSRequest,
     responseHandler: WSResponse => Future[R])(implicit rds: Reads[T]): Future[R] = {
-    getWithBearerAuth(request, stravaAccessToken).flatMap(responseHandler)
+    authBearer.getWithBearerAuth(request, stravaAccessToken).flatMap(responseHandler)
   }
 }

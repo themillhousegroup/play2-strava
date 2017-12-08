@@ -1,6 +1,6 @@
 package com.themillhousegroup.play2.strava.services
 
-import com.themillhousegroup.play2.strava.services.helpers.StandardRequestResponseHelper
+import com.themillhousegroup.play2.strava.services.helpers.{ AuthBearer, StandardRequestResponseHelper }
 import com.themillhousegroup.play2.strava.test.TestFixtures
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
@@ -35,9 +35,11 @@ class StravaSegmentServiceSpec extends Specification with Mockito with TestFixtu
   badJsonRequest.withHeaders(any[(String, String)]) returns badJsonRequest
   badJsonRequest.get returns Future.successful(badJsonResponse)
 
+  val mockAuthBearer = mock[AuthBearer]
+  mockAuthBearer.getWithBearerAuth(any[WSRequest], anyString) returns Future.successful(notFoundResponse)
   val mockStravaAPI = mock[StravaAPI]
 
-  val requester = new StandardRequestResponseHelper()
+  val requester = new StandardRequestResponseHelper(mockAuthBearer)
 
   val segmentService = new StravaSegmentService(mockStravaAPI, requester)
 

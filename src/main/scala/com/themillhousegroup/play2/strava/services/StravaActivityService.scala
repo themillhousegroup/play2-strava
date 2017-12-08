@@ -9,7 +9,6 @@ import play.api.libs.json.Format
 
 import scala.concurrent.Future
 import com.themillhousegroup.play2.strava.models._
-import com.themillhousegroup.play2.strava.services.helpers.AuthBearer._
 import com.themillhousegroup.play2.strava.services.helpers.StandardRequestResponseHelper
 import org.joda.time.DateTime
 
