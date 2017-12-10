@@ -1,42 +1,20 @@
 package com.themillhousegroup.play2.strava.services
 
 import com.themillhousegroup.play2.strava.services.helpers.{ AuthBearer, StandardRequestResponseHelper }
-import com.themillhousegroup.play2.strava.test.TestFixtures
+import com.themillhousegroup.play2.strava.test.{ StandardMocks, TestFixtures }
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.mockito.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import play.api.libs.json.{ JsValue, Json }
-import play.api.libs.ws.{ WSRequest, WSResponse }
 
-import scala.concurrent.Future
-
-class StravaSegmentServiceSpec extends Specification with Mockito with TestFixtures {
+class StravaSegmentServiceSpec extends Specification with Mockito with TestFixtures with StandardMocks {
 
   val TOKEN = "Token"
 
   val now = new DateTime()
 
-  val notFoundResponse = mock[WSResponse]
-  notFoundResponse.status returns 404
-  notFoundResponse.header(anyString) returns None
-
-  val notFoundRequest = mock[WSRequest]
-  notFoundRequest.withHeaders(any[(String, String)]) returns notFoundRequest
-  notFoundRequest.get returns Future.successful(notFoundResponse)
-
-  val badJsonResponse = mock[WSResponse]
-  badJsonResponse.status returns 200
-  badJsonResponse.header(anyString) returns None
-  badJsonResponse.json returns Json.obj("foo" -> "bar")
-
-  val badJsonRequest = mock[WSRequest]
-  badJsonRequest.withHeaders(any[(String, String)]) returns badJsonRequest
-  badJsonRequest.get returns Future.successful(badJsonResponse)
-
-  val mockAuthBearer = mock[AuthBearer]
-  mockAuthBearer.getWithBearerAuth(any[WSRequest], anyString) returns Future.successful(notFoundResponse)
   val mockStravaAPI = mock[StravaAPI]
 
   val requester = new StandardRequestResponseHelper(mockAuthBearer)
@@ -62,18 +40,13 @@ class StravaSegmentServiceSpec extends Specification with Mockito with TestFixtu
       "end_latlng" -> Json.arr(-37.2D, 123.5D)
     )
 
-    val foundResponse = mock[WSResponse]
-    foundResponse.status returns 200
-    foundResponse.header(anyString) returns None
-    foundResponse.json returns validSegmentJson
+    val foundResponse = buildMockResponse(200, Some(validSegmentJson))
 
-    val foundRequest = mock[WSRequest]
-    foundRequest.withHeaders(any[(String, String)]) returns foundRequest
-    foundRequest.get returns Future.successful(foundResponse)
+    val foundRequest = mockRequestThatReturns(foundResponse)
 
-    mockStravaAPI.segmentUrlFinder(123L) returns foundRequest
     mockStravaAPI.segmentUrlFinder(404L) returns notFoundRequest
     mockStravaAPI.segmentUrlFinder(911L) returns badJsonRequest
+    mockStravaAPI.segmentUrlFinder(123L) returns foundRequest
 
     "Return None for non-existent segment" in {
       waitFor(segmentService.getSegment(TOKEN, 404L)) must beNone
@@ -100,14 +73,9 @@ class StravaSegmentServiceSpec extends Specification with Mockito with TestFixtu
       )
     )
 
-    val foundResponse = mock[WSResponse]
-    foundResponse.status returns 200
-    foundResponse.header(anyString) returns None
-    foundResponse.json returns validSegmentStreamJson
+    val foundResponse = buildMockResponse(200, Some(validSegmentStreamJson))
 
-    val foundRequest = mock[WSRequest]
-    foundRequest.withHeaders(any[(String, String)]) returns foundRequest
-    foundRequest.get returns Future.successful(foundResponse)
+    val foundRequest = mockRequestThatReturns(foundResponse)
 
     mockStravaAPI.segmentStreamUrlFinder(Matchers.eq(123L), anyString, any[Option[String]], any[Option[String]]) returns foundRequest
     mockStravaAPI.segmentStreamUrlFinder(Matchers.eq(404L), anyString, any[Option[String]], any[Option[String]]) returns notFoundRequest
