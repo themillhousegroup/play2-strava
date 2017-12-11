@@ -2,7 +2,7 @@ package com.themillhousegroup.play2.strava.services.helpers
 
 import javax.inject.Inject
 
-import play.api.libs.json.Reads
+import play.api.libs.json._
 import play.api.libs.ws.{ WSRequest, WSResponse }
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Logger
@@ -17,42 +17,27 @@ class StandardRequestResponseHelper @Inject() (val authBearer: AuthBearer) {
     Future(syncResponseHandler(resp))
   }
 
-  private def defaultResponseHandler[T](implicit rds: Reads[T]): WSResponse => Option[T] = { response =>
+  private def innerResponseHandler[T, R](validator: JsValue => JsResult[R])(onFail: => R)(implicit rds: Reads[T]): WSResponse => R = { response =>
     if (response.status == 200) {
 
       logger.trace(s"Attempting conversion of:\n${response.json}")
 
-      val validationResult = response.json.validate[T]
+      val validationResult = validator(response.json)
 
-      if (validationResult.isError) {
-        val message = s"Conversion of ${response.json} was unsuccessful; ${validationResult.toString}; returning a None"
+      validationResult.getOrElse {
+        val message = s"Conversion of ${response.json} was unsuccessful; ${validationResult.toString}; returning the 'fail' response"
         logger.warn(message)
+        onFail
       }
-
-      validationResult.asOpt
     } else {
       logger.warn(s"Encountered response code ${response.status} - message: ${response.body}")
-      None
+      onFail
     }
   }
-  private def defaultSeqResponseHandler[T](implicit rds: Reads[T]): WSResponse => Seq[T] = { response =>
-    if (response.status == 200) {
 
-      logger.trace(s"Attempting conversion of:\n${response.json}")
+  private def defaultOptionalResponseHandler[T](implicit rds: Reads[T]): WSResponse => Option[T] = innerResponseHandler[T, Option[T]](_.validateOpt[T])(None)(rds)
 
-      val validationResult = response.json.validate[Seq[T]]
-
-      if (validationResult.isError) {
-        val message = s"Conversion of ${response.json} was unsuccessful; ${validationResult.toString}; returning a Nil"
-        logger.warn(message)
-      }
-
-      validationResult.getOrElse(Nil)
-    } else {
-      logger.warn(s"Encountered response code ${response.status} - message: ${response.body}")
-      Nil
-    }
-  }
+  private def defaultSeqResponseHandler[T](implicit rds: Reads[T]): WSResponse => Seq[T] = innerResponseHandler[T, Seq[T]](_.validate[Seq[T]])(Nil)(rds)
 
   def apply[T](stravaAccessToken: String,
     request: WSRequest)(implicit rds: Reads[T]): Future[Option[T]] = {
@@ -60,7 +45,7 @@ class StandardRequestResponseHelper @Inject() (val authBearer: AuthBearer) {
     apply(
       stravaAccessToken,
       request,
-      defaultResponseHandler(rds)
+      defaultOptionalResponseHandler(rds)
     )
   }
 
@@ -80,7 +65,7 @@ class StandardRequestResponseHelper @Inject() (val authBearer: AuthBearer) {
     async(
       stravaAccessToken,
       request,
-      asyncWrap(defaultResponseHandler(rds))
+      asyncWrap(defaultOptionalResponseHandler(rds))
     )
   }
 

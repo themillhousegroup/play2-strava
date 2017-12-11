@@ -38,12 +38,8 @@ trait StandardMocks extends Mockito {
   }
 
   def mockRequestThatReturns(response: WSResponse): WSRequest = {
-
     val request = buildMockRequest
-
-    mockAuthBearer.getWithBearerAuth(Matchers.eq(request), anyString) returns Future.successful(response)
-
-    request
+    requestWillReturn(request, response)
   }
 
   requestWillReturn(notFoundRequest, notFoundResponse)
