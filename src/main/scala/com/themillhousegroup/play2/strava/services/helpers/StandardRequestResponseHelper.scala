@@ -39,8 +39,12 @@ class StandardRequestResponseHelper @Inject() (val authBearer: AuthBearer) {
 
   private def defaultSeqResponseHandler[T](implicit rds: Reads[T]): WSResponse => Seq[T] = innerResponseHandler[T, Seq[T]](_.validate[Seq[T]])(Nil)(rds)
 
+  //////////////////////////////////////////////////////////////////////////////////
+  // apply/async is TOUGH: Failure to find or convert will return a FAILED FUTURE
+  //////////////////////////////////////////////////////////////////////////////////
+
   def apply[T](stravaAccessToken: String,
-    request: WSRequest)(implicit rds: Reads[T]): Future[Option[T]] = {
+    request: WSRequest)(implicit rds: Reads[T]): Future[T] = {
 
     apply(
       stravaAccessToken,
@@ -51,7 +55,7 @@ class StandardRequestResponseHelper @Inject() (val authBearer: AuthBearer) {
 
   def apply[T](stravaAccessToken: String,
     request: WSRequest,
-    responseHandler: WSResponse => Option[T])(implicit rds: Reads[T]): Future[Option[T]] = {
+    responseHandler: WSResponse => Option[T])(implicit rds: Reads[T]): Future[T] = {
 
     async(
       stravaAccessToken,
@@ -61,15 +65,40 @@ class StandardRequestResponseHelper @Inject() (val authBearer: AuthBearer) {
   }
 
   def async[T](stravaAccessToken: String,
+    request: WSRequest,
+    responseHandler: WSResponse => Future[Option[T]])(implicit rds: Reads[T]): Future[T] = {
+
+    makeRequest(stravaAccessToken, request, responseHandler).map { maybeT =>
+      maybeT.get
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // Optionals: Any problem with finding or converting a domain object returns None
+  //////////////////////////////////////////////////////////////////////////////////
+
+  def optional[T](stravaAccessToken: String,
     request: WSRequest)(implicit rds: Reads[T]): Future[Option[T]] = {
-    async(
+
+    optional(
       stravaAccessToken,
       request,
-      asyncWrap(defaultOptionalResponseHandler(rds))
+      defaultOptionalResponseHandler(rds)
     )
   }
 
-  def async[T](stravaAccessToken: String,
+  def optional[T](stravaAccessToken: String,
+    request: WSRequest,
+    responseHandler: WSResponse => Option[T])(implicit rds: Reads[T]): Future[Option[T]] = {
+
+    asyncOptional(
+      stravaAccessToken,
+      request,
+      asyncWrap(responseHandler)
+    )
+  }
+
+  def asyncOptional[T](stravaAccessToken: String,
     request: WSRequest,
     responseHandler: WSResponse => Future[Option[T]])(implicit rds: Reads[T]): Future[Option[T]] = {
 
@@ -96,15 +125,6 @@ class StandardRequestResponseHelper @Inject() (val authBearer: AuthBearer) {
       stravaAccessToken,
       request,
       asyncWrap(responseHandler)
-    )
-  }
-
-  def asyncSeq[T](stravaAccessToken: String,
-    request: WSRequest)(implicit rds: Reads[T]): Future[Seq[T]] = {
-    asyncSeq(
-      stravaAccessToken,
-      request,
-      (resp) => Future(defaultSeqResponseHandler(rds)(resp))
     )
   }
 

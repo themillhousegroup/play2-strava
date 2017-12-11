@@ -19,7 +19,7 @@ class StravaSegmentService @Inject() (val stravaAPI: StravaAPI, val requester: S
 
   def getSegment(stravaAccessToken: String, segmentId: Long): Future[Option[StravaSegment]] = {
     import StravaSegmentJson.stravaSegmentFormat
-    requester(
+    requester.optional(
       stravaAccessToken,
       stravaAPI.segmentUrlFinder(segmentId)
     )
