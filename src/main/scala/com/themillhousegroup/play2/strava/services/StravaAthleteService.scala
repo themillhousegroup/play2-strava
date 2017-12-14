@@ -18,10 +18,19 @@ class StravaAthleteService @Inject() (val stravaAPI: StravaAPI, val cache: Cache
 
   val logger = Logger("StravaAthleteService")
 
-  def getFullAthleteInfo(stravaAccessToken: String, athleteId: Long): Future[Option[StravaAthlete]] = {
+  def findFullAthleteInfo(stravaAccessToken: String, athleteId: Long): Future[Option[StravaAthlete]] = {
     import StravaAthleteJson._
 
     requester.optional(
+      stravaAccessToken,
+      stravaAPI.athleteFinder(athleteId)
+    )
+  }
+
+  def getFullAthleteInfo(stravaAccessToken: String, athleteId: Long): Future[StravaAthlete] = {
+    import StravaAthleteJson._
+
+    requester(
       stravaAccessToken,
       stravaAPI.athleteFinder(athleteId)
     )
