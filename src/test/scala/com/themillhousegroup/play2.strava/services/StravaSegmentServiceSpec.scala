@@ -21,24 +21,47 @@ class StravaSegmentServiceSpec extends Specification with Mockito with TestFixtu
 
   val segmentService = new StravaSegmentService(mockStravaAPI, requester)
 
-  "StravaSegmentService - getSegment" should {
+  val validSegmentJson = Json.obj(
+    "id" -> 123,
+    "name" -> "validSegmentJson",
+    "distance" -> 123.4D,
+    "average_grade" -> 1.2D,
+    "maximum_grade" -> 3.4D,
+    "elevation_high" -> 333D,
+    "elevation_low" -> 222D,
+    "total_elevation_gain" -> 111D,
+    "map" -> Json.obj("polyline" -> ""),
+    "effort_count" -> 5678,
+    "athlete_count" -> 1234,
+    "created_at" -> now.toString(DateTimeFormat.fullDateTime),
+    "start_latlng" -> Json.arr(-37.1D, 123.4D),
+    "end_latlng" -> Json.arr(-37.2D, 123.5D)
+  )
 
-    val validSegmentJson = Json.obj(
-      "id" -> 123,
-      "name" -> "validSegmentJson",
-      "distance" -> 123.4D,
-      "average_grade" -> 1.2D,
-      "maximum_grade" -> 3.4D,
-      "elevation_high" -> 333D,
-      "elevation_low" -> 222D,
-      "total_elevation_gain" -> 111D,
-      "map" -> Json.obj("polyline" -> ""),
-      "effort_count" -> 5678,
-      "athlete_count" -> 1234,
-      "created_at" -> now.toString(DateTimeFormat.fullDateTime),
-      "start_latlng" -> Json.arr(-37.1D, 123.4D),
-      "end_latlng" -> Json.arr(-37.2D, 123.5D)
-    )
+  "StravaSegmentService - findSegment" should {
+
+    val foundResponse = buildMockResponse(200, Some(validSegmentJson))
+
+    val foundRequest = mockRequestThatReturns(foundResponse)
+
+    mockStravaAPI.segmentUrlFinder(404L) returns notFoundRequest
+    mockStravaAPI.segmentUrlFinder(911L) returns badJsonRequest
+    mockStravaAPI.segmentUrlFinder(123L) returns foundRequest
+
+    "Fail the future for non-existent segment" in {
+      waitFor(segmentService.findSegment(TOKEN, 404L)) must beNone
+    }
+
+    "Fail the future if we can't parse a segment" in {
+      waitFor(segmentService.findSegment(TOKEN, 911L)) must beNone
+    }
+
+    "Return an existent segment" in {
+      waitFor(segmentService.findSegment(TOKEN, 123L)) must beSome
+    }
+  }
+
+  "StravaSegmentService - getSegment" should {
 
     val foundResponse = buildMockResponse(200, Some(validSegmentJson))
 
@@ -49,15 +72,15 @@ class StravaSegmentServiceSpec extends Specification with Mockito with TestFixtu
     mockStravaAPI.segmentUrlFinder(123L) returns foundRequest
 
     "Return None for non-existent segment" in {
-      waitFor(segmentService.getSegment(TOKEN, 404L)) must beNone
+      waitFor(segmentService.getSegment(TOKEN, 404L)) must throwAn[Exception]
     }
 
     "Return a None if we can't parse a segment" in {
-      waitFor(segmentService.getSegment(TOKEN, 911L)) must beNone
+      waitFor(segmentService.getSegment(TOKEN, 911L)) must throwAn[Exception]
     }
 
     "Return a Some for an existent segment" in {
-      waitFor(segmentService.getSegment(TOKEN, 123L)) must beSome
+      waitFor(segmentService.getSegment(TOKEN, 123L)) must not beNull
     }
   }
 
