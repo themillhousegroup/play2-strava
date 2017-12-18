@@ -73,9 +73,9 @@ class StravaSegmentService @Inject() (val stravaAPI: StravaAPI, val requester: S
     val segmentArrayConverter: (WSResponse) => Seq[StravaSegment] = { response =>
       val segmentsArray = (response.json \ "segments")
       segmentsArray.toOption.fold {
-        Seq[StravaSegment]()
+        Seq.empty[StravaSegment]
       } { segs =>
-        segs.validate[Seq[StravaSegment]].getOrElse(Seq[StravaSegment]())
+        segs.validate[Seq[StravaSegment]].getOrElse(Seq.empty[StravaSegment])
       }
     }
 
