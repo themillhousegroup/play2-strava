@@ -58,6 +58,7 @@ object StravaAPI {
   private def singleActivityUrl(id: Long) = stravaV3BaseUrl + s"/activities/${id}"
   private def clubActivityUrl(id: String) = stravaV3BaseUrl + s"/clubs/${id}/activities"
   private def segmentUrl(id: Long) = stravaV3BaseUrl + s"/segments/${id}"
+  private def segmentEffortUrl(id: Long) = stravaV3BaseUrl + s"/segment_efforts/${id}"
   private def segmentEffortsUrl(id: Long) = stravaV3BaseUrl + s"/segments/${id}/all_efforts"
   private def activityStreamUrl(
     id: Long,
@@ -131,6 +132,7 @@ class StravaAPI @Inject() (val wsClient: WSClient) {
   }
 
   def segmentUrlFinder(segmentId: Long): WSRequest = wsClient.url(segmentUrl(segmentId))
+  def segmentEffortUrlFinder(segmentEffortId: Long): WSRequest = wsClient.url(segmentEffortUrl(segmentEffortId))
   def segmentEffortsUrlFinder(segmentId: Long,
     maybeAthleteId: Option[Long] = None,
     maybeStartFrom: Option[LocalDateTime] = None,
