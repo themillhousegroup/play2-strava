@@ -22,6 +22,7 @@ object StravaAPI {
 
   object Athlete {
     val allMyActivitiesUrl = stravaV3BaseUrl + "/athlete/activities"
+    val listStarredSegmentsUrl = stravaV3BaseUrl + "/segments/starred"
   }
 
   object Athletes {
@@ -129,6 +130,9 @@ class StravaAPI @Inject() (val wsClient: WSClient) {
     resolution: Option[String],
     seriesType: Option[String]): WSRequest = {
     wsClient.url(segmentStreamUrl(segmentId, streamType, resolution, seriesType))
+  }
+  def listStarredSegmentsUrlFinder(page: Int): WSRequest = withPaginationQueryString(page) {
+    wsClient.url(StravaAPI.Athlete.listStarredSegmentsUrl)
   }
 
   def segmentUrlFinder(segmentId: Long): WSRequest = wsClient.url(segmentUrl(segmentId))
