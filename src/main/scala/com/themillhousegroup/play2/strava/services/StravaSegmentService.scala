@@ -89,15 +89,15 @@ class StravaSegmentService @Inject() (val stravaAPI: StravaAPI, val requester: S
 
   }
 
-  def listStarredSegments(stravaAccessToken: String): Future[Seq[StravaSegment]] = {
-    import StravaSegmentJson.stravaSegmentFormat
+  def listStarredSegments(stravaAccessToken: String): Future[Seq[StravaSegmentSummary]] = {
+    import StravaSegmentJson.stravaSegmentSummaryFormat
 
-    val paginatedSegmentEffort = (page: Int) =>
+    val paginatedSegmentSummaries = (page: Int) =>
       requester.seq(
         stravaAccessToken,
         stravaAPI.listStarredSegmentsUrlFinder(page)
       )
 
-    StravaAPI.depaginate(paginatedSegmentEffort)
+    StravaAPI.depaginate(paginatedSegmentSummaries)
   }
 }
