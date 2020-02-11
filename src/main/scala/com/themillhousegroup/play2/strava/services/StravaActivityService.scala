@@ -91,12 +91,4 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:Standar
     StravaAPI.depaginate(paginatedActivityList)
   }
 
-  def listActivityPhotos(stravaAccessToken:String, activityId:Long, sizePx:Option[Int]):Future[Seq[EssentialStravaActivityPhoto]] = {
-    requester.seq(
-      stravaAccessToken,
-      stravaAPI.activityPhotosUrlFinder(activityId, sizePx)
-    )(EssentialStravaActivityPhoto.esapReads).map { photos =>
-      photos.sorted
-    }
-  }
 }

@@ -7,7 +7,7 @@ import com.themillhousegroup.play2.strava.services.traits.UsageMonitoring
 import scala.concurrent.Future
 import play.api.libs.ws._
 import play.api.Logger
-import play.api.http.Writeable
+import play.api.libs.ws.BodyWritable
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class AuthBearer @Inject() (val usageMonitoring: UsageMonitoring) {
@@ -22,7 +22,7 @@ class AuthBearer @Inject() (val usageMonitoring: UsageMonitoring) {
     withBearerAuth(finder, accessToken).get.map(usageMonitoring.updateUsage)
   }
 
-  def postWithBearerAuth[T](finder: WSRequest, accessToken: String, body: T)(writeable: Writeable[T]): Future[WSResponse] = {
+  def postWithBearerAuth[T](finder: WSRequest, accessToken: String, body: T)(writeable: BodyWritable[T]): Future[WSResponse] = {
     withBearerAuth(finder, accessToken).post(body)(writeable).map(usageMonitoring.updateUsage)
   }
 

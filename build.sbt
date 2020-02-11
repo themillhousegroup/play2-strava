@@ -5,16 +5,21 @@ version := s"${sys.props.getOrElse("build.majorMinor", "0.4")}.${sys.props.getOr
 
 scalaVersion := "2.11.7"
 
+crossScalaVersions := Seq("2.12.8", "2.11.7")
+
 organization := "com.themillhousegroup"
 
-val targetPlayVersion = "2.5.3"
+val targetPlayVersion = "2.6.25"
+
+val minimumSpecs2Version = "[4.8,)"
 
 libraryDependencies ++= Seq(
-    "com.typesafe.play"           %%  "play-ws"               % targetPlayVersion      % "provided",
-    "com.typesafe.play"           %%  "play-cache"            % targetPlayVersion      % "provided",
+    "com.typesafe.play"           %%  "play-ws"               % targetPlayVersion      	% "provided",
+    "com.typesafe.play"           %%  "play-cache"            % targetPlayVersion      	% "provided",
     "joda-time"                   % "joda-time"               % "2.9.9",
-    "org.mockito"                 %   "mockito-all"           % "1.10.19"       % "test",
-    "org.specs2"                  %%  "specs2"                % "2.3.13"      % "test"
+    "org.mockito"                 %   "mockito-all"           % "1.10.19"       				% "test",
+		"org.specs2"                  %%  "specs2-core"           % minimumSpecs2Version      % "test",
+    "org.specs2"                  %%  "specs2-mock"           % minimumSpecs2Version      % "test"
 )
 
 resolvers ++= Seq(  "oss-snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
