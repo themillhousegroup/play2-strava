@@ -19,17 +19,9 @@ Bring in the library by adding the following to your ```build.sbt```.
 
 ```
    libraryDependencies ++= Seq(
-     "com.themillhousegroup" %% "play2-strava" % "0.1.2"
+     "com.themillhousegroup" %% "play2-strava" % "0.4.30"
    )
 
-```
-
-### Usage
-
-Once you have __play2-strava__ added to your project, you can start using it like this:
-
-```
- 
 ```
 
 
