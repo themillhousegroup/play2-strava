@@ -14,6 +14,8 @@ object StravaActivity {
     }
 }
 
+// Because we're limited to 22 fields in case classes,
+// users have to pick *which* "aspect" of the Strava Activity they are interested in...
 trait EssentialStravaActivity {
   val id: Long
   val name: String
@@ -82,6 +84,32 @@ case class StravaActivity(
     description: Option[String] = None,
     segment_efforts: Option[List[StravaSegmentEffort]] = None) extends EssentialStravaActivity {
 
+}
+
+/** This version provides all location fields  */
+
+case class StravaActivityLocationAspects(
+    id: Long,
+    athlete: MinimalStravaEntity,
+    name: String,
+    distance: Double,
+    moving_time: Int,
+    elapsed_time: Int,
+    total_elevation_gain: Double,
+    `type`: String,
+    start_date: String,
+    start_date_local: String,
+    timezone: String,
+    manual: Boolean,
+    commute: Boolean,
+    `private`: Boolean,
+    device_name: Option[String],
+    description: Option[String] = None,
+    segment_efforts: Option[List[StravaSegmentEffort]] = None,
+    start_latlng: Seq[Double],
+    end_latlng: Seq[Double],
+    start_latitude: Double,
+    start_longitude: Double) extends EssentialStravaActivity {
 }
 
 /** This version sacrifices location fields for performance aspects */

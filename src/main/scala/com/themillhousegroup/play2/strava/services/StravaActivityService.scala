@@ -4,7 +4,6 @@ import javax.inject.{Inject, Singleton}
 
 import play.api.Logger
 import play.api.cache.CacheApi
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Format
 
 import scala.concurrent.Future
@@ -86,6 +85,35 @@ class StravaActivityService @Inject()(val stravaAPI:StravaAPI, requester:Standar
       requester.seq(
         stravaAccessToken,
         stravaAPI.allMyActivitiesFinder(page).withQueryString("after" -> afterInSecondsFromEpoch.toString)
+      )
+
+    StravaAPI.depaginate(paginatedActivityList)
+  }
+
+  def listActivitiesBefore(stravaAccessToken:String, time:DateTime):Future[Seq[StravaActivitySummary]] = {
+    val beforeInSecondsFromEpoch = time.getMillis / 1000
+    logger.info(s"Requesting Strava entries for $stravaAccessToken BEFORE $beforeInSecondsFromEpoch")
+
+    import StravaActivitySummaryJson._
+    val paginatedActivityList = (page:Int) =>
+      requester.seq(
+        stravaAccessToken,
+        stravaAPI.allMyActivitiesFinder(page).withQueryString("before" -> beforeInSecondsFromEpoch.toString)
+      )
+
+    StravaAPI.depaginate(paginatedActivityList)
+  }
+
+  def listActivitiesBetween(stravaAccessToken:String, startTime:DateTime, endTime: DateTime):Future[Seq[StravaActivitySummary]] = {
+    val afterInSecondsFromEpoch = startTime.getMillis / 1000
+    val beforeInSecondsFromEpoch = endTime.getMillis / 1000
+    logger.info(s"Requesting Strava entries for $stravaAccessToken BETWEEN $afterInSecondsFromEpoch and $beforeInSecondsFromEpoch")
+
+    import StravaActivitySummaryJson._
+    val paginatedActivityList = (page:Int) =>
+      requester.seq(
+        stravaAccessToken,
+        stravaAPI.allMyActivitiesFinder(page).withQueryString("after" -> afterInSecondsFromEpoch.toString, "before" -> beforeInSecondsFromEpoch.toString)
       )
 
     StravaAPI.depaginate(paginatedActivityList)

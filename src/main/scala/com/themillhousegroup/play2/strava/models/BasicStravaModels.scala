@@ -37,6 +37,12 @@ object StravaActivityJson extends StravaJson {
   implicit val stravaActivityFormat = Json.format[StravaActivity]
 }
 
+object StravaActivityLocationAspectsJson extends StravaJson {
+  import StravaSegmentJson.stravaSegmentEffortFormat
+
+  implicit val stravaActivityLocationFormat = Json.format[StravaActivityLocationAspects]
+}
+
 object StravaActivityPerformanceAspectsJson extends StravaJson {
   import StravaSegmentJson.stravaSegmentEffortFormat
 
