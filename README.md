@@ -19,7 +19,7 @@ Bring in the library by adding the following to your ```build.sbt```.
 
 ```
    libraryDependencies ++= Seq(
-     "com.themillhousegroup" %% "play2-strava" % "0.4.30"
+     "com.themillhousegroup" %% "play2-strava" % "0.4.33"
    )
 
 ```
